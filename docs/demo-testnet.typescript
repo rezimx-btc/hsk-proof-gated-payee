@@ -1,0 +1,60 @@
+Script started on 2026-11-21 15:41:11+00:00 [COMMAND="npm run demo:testnet" <not executed on terminal>]
+
+> proof-gated-payee-hsk-agent@1.0.0 demo:testnet
+> node src/cli.mjs demo --network testnet
+
+[1G[0KNETWORK: HSK Chain TESTNET (chain ID 133) — no mainnet, ever.
+contract: 0x2dE5fa0531148a3535659035EDDDdf75e2552E06
+explorer: https://testnet-explorer.hskchain.net/address/0x2dE5fa0531148a3535659035EDDDdf75e2552E06
+
+================ FLOW 1 — PASS: mandate valid, funds released ================
+invoice #3 created + funded 0.01 ETH — tx 0x25cee0f4ad9ba1698a728d2546c763c8b1e0484ae41ba33b6147a29e61eea085
+mandate signed by payer 0xcd3CD4c620aa0bAa0Df31Ddaf6e8713d5968397F
+
+--- verifier — 5 gates ---
+  PASS  1-payee-allowlisted — payee 0x3Eb09d7A08ACD5dEbC1F0b5ee83a1a344890632F is registered
+  PASS  2-amount-within-spending-limit — amount 0.01 <= remaining 4.99
+  PASS  3-mandate-signature-valid — mandate signed by payer 0xcd3CD4c620aa0bAa0Df31Ddaf6e8713d5968397F
+  PASS  4-mandate-unexpired — expiry 2026-11-22T15:41:13.000Z is in the future
+  PASS  5-purpose-matches-invoice — purpose matches: "A2A invoice INV-2026-0001"
+  ==> VERDICT: PASS — release allowed
+RELEASED — payee +0.01 ETH — tx 0x4f2f82f957de5f83ee0a5420faf0e2e2f26a6d40611ddf00766211815d3f24d7
+contract balance now: 0.0 ETH
+
+================ FLOW 2 — FAIL: payee revoked (unknown) → refund penuh ================
+invoice #4 created + funded 0.01 ETH
+payee 0x3Eb09d7A08ACD5dEbC1F0b5ee83a1a344890632F REVOKED from allowlist
+
+--- verifier — 5 gates ---
+  FAIL  1-payee-allowlisted — payee 0x3Eb09d7A08ACD5dEbC1F0b5ee83a1a344890632F is NOT on the allowlist
+  PASS  2-amount-within-spending-limit — amount 0.01 <= remaining 4.98
+  PASS  3-mandate-signature-valid — mandate signed by payer 0xcd3CD4c620aa0bAa0Df31Ddaf6e8713d5968397F
+  PASS  4-mandate-unexpired — expiry 2026-11-22T15:41:28.000Z is in the future
+  PASS  5-purpose-matches-invoice — purpose matches: "A2A invoice INV-2026-0001"
+  FAIL  6-contract-canRelease — contract says: payee not registered
+  ==> VERDICT: FAIL — release refused
+release correctly REVERTED: execution reverted (unknown custom error)
+REFUNDED in full — payer balance +0.009935378442999743 ETH (net of gas) — tx 0xfffc6730270a9f18eeeebdd228dc1676b948295cc433ef7ffbf0c275c15f45c0
+contract balance now: 0.0 ETH
+payee re-registered for the next flow
+
+================ FLOW 3 — FAIL: mandate dipalsu (amount diubah) → refund penuh ================
+mandate amount tampered: 0.01 ETH -> 0.02 ETH (signature NOT re-signed)
+
+--- verifier — 5 gates ---
+  PASS  1-payee-allowlisted — payee 0x3Eb09d7A08ACD5dEbC1F0b5ee83a1a344890632F is registered
+  PASS  2-amount-within-spending-limit — amount 0.01 <= remaining 4.98
+  FAIL  3-mandate-signature-valid — mandate signature recovers to 0x0a683Bc3530b2A5bDCc1c3C4252E4b0bB616A127, expected payer 0xcd3CD4c620aa0bAa0Df31Ddaf6e8713d5968397F
+  PASS  4-mandate-unexpired — expiry 2026-11-22T15:41:57.000Z is in the future
+  PASS  5-purpose-matches-invoice — purpose matches: "A2A invoice INV-2026-0001"
+  ==> VERDICT: FAIL — release refused
+release correctly REVERTED: execution reverted (unknown custom error)
+REFUNDED in full — tx 0xb0d26b9ba298998344319d9875a751a4f24755efcb1a724de6ca7c989fe67bc9
+contract balance now: 0.0 ETH
+
+================ DEMO COMPLETE ================
+PASS flow: mandate valid -> released to registered payee.
+FAIL flow A: payee unknown -> release refused -> payer refunded in full.
+FAIL flow B: mandate tampered -> release refused -> payer refunded in full.
+[1G[0K\[1G[0K
+Script done on 2026-11-21 15:42:12+00:00 [COMMAND_EXIT_CODE="0"]

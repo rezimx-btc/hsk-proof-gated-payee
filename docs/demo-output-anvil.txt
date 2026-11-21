@@ -1,0 +1,56 @@
+NETWORK: local anvil (chain ID 31337) — demo only.
+anvil not running — starting local anvil…
+deploying ProofGatedPayeeHSK to anvil…
+deployed at: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+owner: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+setup: registerPayee + authorizeAgent + setSpendingLimit(5 ETH / 1 day)…
+
+================ FLOW 1 — PASS: mandate valid, funds released ================
+invoice #0 created + funded 1 ETH — tx 0x0843d25d701ea9077552f11b9f8bb02662f5c03f4382cc9381c66257e475a44b
+mandate signed by payer 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+
+--- verifier — 5 gates ---
+  PASS  1-payee-allowlisted — payee 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC is registered
+  PASS  2-amount-within-spending-limit — amount 1.0 <= remaining 5.0
+  PASS  3-mandate-signature-valid — mandate signed by payer 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  PASS  4-mandate-unexpired — expiry 2026-11-22T12:01:03.000Z is in the future
+  PASS  5-purpose-matches-invoice — purpose matches: "A2A invoice INV-2026-0001"
+  ==> VERDICT: PASS — release allowed
+RELEASED — payee +1.0 ETH — tx 0xcaf647b09ab829e5910403505a95404095bc06d0c38897e33c2856d77947bc40
+contract balance now: 0.0 ETH
+
+================ FLOW 2 — FAIL: payee revoked (unknown) → refund penuh ================
+invoice #1 created + funded 1 ETH
+payee 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC REVOKED from allowlist
+
+--- verifier — 5 gates ---
+  FAIL  1-payee-allowlisted — payee 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC is NOT on the allowlist
+  PASS  2-amount-within-spending-limit — amount 1.0 <= remaining 4.0
+  PASS  3-mandate-signature-valid — mandate signed by payer 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  PASS  4-mandate-unexpired — expiry 2026-11-22T12:01:04.000Z is in the future
+  PASS  5-purpose-matches-invoice — purpose matches: "A2A invoice INV-2026-0001"
+  FAIL  6-contract-canRelease — contract says: payee not registered
+  ==> VERDICT: FAIL — release refused
+release correctly REVERTED: execution reverted (unknown custom error)
+REFUNDED in full — payer balance +0.999912357575481106 ETH (net of gas) — tx 0x86ac795f1c6182124c78cfae47fcc131c6ef46716b0b16147c76e743ecdd7214
+contract balance now: 0.0 ETH
+payee re-registered for the next flow
+
+================ FLOW 3 — FAIL: mandate dipalsu (amount diubah) → refund penuh ================
+mandate amount tampered: 1 ETH -> 2 ETH (signature NOT re-signed)
+
+--- verifier — 5 gates ---
+  PASS  1-payee-allowlisted — payee 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC is registered
+  PASS  2-amount-within-spending-limit — amount 1.0 <= remaining 4.0
+  FAIL  3-mandate-signature-valid — mandate signature recovers to 0x85fe65207345f37f4faD58870F6EaD1B1d92eE24, expected payer 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  PASS  4-mandate-unexpired — expiry 2026-11-22T12:01:05.000Z is in the future
+  PASS  5-purpose-matches-invoice — purpose matches: "A2A invoice INV-2026-0001"
+  ==> VERDICT: FAIL — release refused
+release correctly REVERTED: execution reverted (unknown custom error)
+REFUNDED in full — tx 0x8dcfb154fd93a1e5525b378dbe0c091ac62a779885075028a12f1eb16f3beec4
+contract balance now: 0.0 ETH
+
+================ DEMO COMPLETE ================
+PASS flow: mandate valid -> released to registered payee.
+FAIL flow A: payee unknown -> release refused -> payer refunded in full.
+FAIL flow B: mandate tampered -> release refused -> payer refunded in full.
