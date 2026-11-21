@@ -1,0 +1,14 @@
+{
+  "name": "proof-gated-payee-hsk-agent",
+  "version": "1.0.0",
+  "description": "Autonomous verifier agent for ProofGatedPayeeHSK on HSK Chain",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "demo": "node src/cli.mjs demo",
+    "demo:testnet": "node src/cli.mjs demo --network testnet"
+  },
+  "dependencies": {
+    "ethers": "^6.13.0"
+  }
+}
