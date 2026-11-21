@@ -1,0 +1,17 @@
+# Secrets — never commit
+.secrets/
+*.keystore
+
+# Foundry
+contracts/lib/
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/foundry.lock
+
+# Node
+agent/node_modules/
+agent/.env
+
+# OS
+.DS_Store
